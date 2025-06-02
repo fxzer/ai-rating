@@ -8,7 +8,7 @@ import { useStore } from '../store/useStore';
 
 export const App: React.FC = () => {
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen font-sans">
+    <div className="bg-gradient-to-br from-slate-50 to-slate-50 min-h-screen font-sans">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* 顶部标题区域 */}
         <Header />

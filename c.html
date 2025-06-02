@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>3D Pastel Gradient Progress Bar</title>
+  <style>
+    body {
+      background: #f3f7ff;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .progress-wrapper {
+      width: 80%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 30px;
+      border-radius: 20px;
+      background: linear-gradient(145deg, #e0ebff, #ffffff);
+      box-shadow: inset 4px 4px 10px rgba(255, 255, 255, 0.6),
+                  inset -4px -4px 10px rgba(0, 0, 0, 0.05),
+                  0 4px 8px rgba(200, 200, 255, 0.3);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff9ec4, #bfaeff, #92f6ff, #ffc87a);
+      background-size: 300% 100%;
+      animation: gradientFlow 2s linear infinite;
+      border-radius: 20px;
+      box-shadow: 0 4px 10px rgba(255, 175, 238, 0.3),
+                  inset 0 0 5px rgba(255, 255, 255, 0.6);
+      position: relative;
+      transition: width 0.3s ease-out;
+    }
+
+    .streamer {
+      position: absolute;
+      top: 0;
+      right: -10px;
+      width: 10px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 5px;
+      filter: blur(4px);
+      animation: streamerMove 2s infinite linear;
+    }
+
+    .progress-text {
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 18px;
+      color: #888;
+      text-shadow: 0 1px 1px #fff;
+    }
+
+    @keyframes gradientFlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+    }
+
+    @keyframes streamerMove {
+      0% { right: -10px; }
+      100% { right: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress-wrapper">
+    <div class="progress-track">
+      <div class="progress-bar">
+        <div class="streamer"></div>
+      </div>
+    </div>
+    <div class="progress-text">0%</div>
+  </div>
+
+  <script>
+    const progressBar = document.querySelector('.progress-bar');
+    const progressText = document.querySelector('.progress-text');
+
+    function setProgress(percent) {
+      percent = Math.max(0, Math.min(100, percent));
+      progressBar.style.width = percent + '%';
+      progressText.textContent = percent + '%';
+    }
+
+    // 模拟进度条从 0 到 100
+    let current = 0;
+    const interval = setInterval(() => {
+      setProgress(current);
+      current++;
+      if (current > 100) clearInterval(interval);
+    }, 50);
+  </script>
+</body>
+</html>

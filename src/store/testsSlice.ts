@@ -1,4 +1,4 @@
-import type { Test } from '../types';
+import type { ModelScore, Test } from '../types';
 
 // 初始测试数据
 export const initialTests: Array<Test> = [
@@ -144,6 +144,7 @@ export interface TestsSlice {
   addTest: (test: Omit<Test, 'id'>) => void;
   deleteTest: (id: string) => void;
   reorderTests: (activeId: string, overId: string) => void;
+  scores?: ModelScore;
 }
 
 export const createTestsSlice = (set: any, get: any): TestsSlice => ({
@@ -152,14 +153,14 @@ export const createTestsSlice = (set: any, get: any): TestsSlice => ({
   
   setCurrentTestIndex: (index: number) => set({ currentTestIndex: index }),
   
-  addTest: (test) => set((state) => {
+  addTest: (test) => set((state: { tests: Array<Test> }) => {
     const newTest = { ...test, id: Date.now().toString() };
     const newTests = [...state.tests, newTest];
     
     return { tests: newTests };
   }),
   
-  deleteTest: (id: string) => set((state) => {
+  deleteTest: (id: string) => set((state: { tests: Array<Test>; currentTestIndex: number; scores: ModelScore }) => {
     const testIndex = state.tests.findIndex(test => test.id === id);
     if (testIndex === -1) return state;
     
@@ -172,13 +173,23 @@ export const createTestsSlice = (set: any, get: any): TestsSlice => ({
       newCurrentIndex = Math.max(0, newTests.length - 1);
     }
     
+    // 更新评分数据，删除对应测试的评分
+    const newScores = { ...state.scores };
+    Object.keys(newScores).forEach(modelKey => {
+      const modelKeyType = modelKey as keyof ModelScore;
+      const modelScores = [...newScores[modelKeyType]];
+      modelScores.splice(testIndex, 1);
+      newScores[modelKeyType] = modelScores;
+    });
+    
     return { 
       tests: newTests,
-      currentTestIndex: newCurrentIndex
+      currentTestIndex: newCurrentIndex,
+      scores: newScores
     };
   }),
   
-  reorderTests: (activeId, overId) => set((state) => {
+  reorderTests: (activeId, overId) => set((state: { tests: Array<Test>; currentTestIndex: number }) => {
     // 找出拖动元素和放置位置的索引
     const oldIndex = state.tests.findIndex(test => test.id === activeId);
     const newIndex = state.tests.findIndex(test => test.id === overId);

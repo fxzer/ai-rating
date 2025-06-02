@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useStore } from '../../store/useStore';
 import type { Test } from '../../store/useStore';
+import type { ModelKey} from '../../types';
+
+
+
 
 interface EditModeState {
   isEditing: boolean;
@@ -8,6 +12,33 @@ interface EditModeState {
   prompt: string;
   icon: string;
 }
+
+// 添加自定义滚动条样式
+const scrollbarStyles = `
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(241, 245, 249, 0.3);
+    border-radius: 10px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(203, 213, 225, 0.5);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(148, 163, 184, 0.7);
+  }
+  
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(203, 213, 225, 0.5) rgba(241, 245, 249, 0.3);
+  }
+`
 
 const CurrentTest: React.FC = () => {
   const { tests, currentTestIndex, scores, setCurrentTestIndex } = useStore();
@@ -49,6 +80,24 @@ const CurrentTest: React.FC = () => {
     }
   }, [currentTestIndex, tests]);
   
+  // 添加滚动条样式
+  useEffect(() => {
+    const styleSheet = document.createElement('style')
+    styleSheet.id = 'custom-scrollbar-style'
+
+    if (!document.getElementById('custom-scrollbar-style')) {
+      styleSheet.innerHTML = scrollbarStyles
+      document.head.appendChild(styleSheet)
+    }
+
+    return () => {
+      const existingStyle = document.getElementById('custom-scrollbar-style')
+      if (existingStyle) {
+        document.head.removeChild(existingStyle)
+      }
+    }
+  }, [])
+  
   if (tests.length === 0) {
     return (
       <div className="lg:col-span-2 lg:row-span-2 bg-white rounded-2xl p-8 bento-card">
@@ -62,15 +111,67 @@ const CurrentTest: React.FC = () => {
   // 计算当前测试完成度
   const calculateCurrentTestProgress = () => {
     let completedCount = 0;
-    Object.keys(scores).forEach(model => {
-      if (scores[model as keyof typeof scores][currentTestIndex] !== null) {
-        completedCount++;
-      }
-    });
+    if (scores) {
+      Object.keys(scores).forEach(model => {
+        const modelKey = model as keyof typeof scores;
+        if (scores[modelKey][currentTestIndex] !== null) {
+          completedCount++;
+        }
+      });
+    }
     return { completed: completedCount, total: 4 }; // 4个模型
   };
   
+  // 计算评分统计
+  const calculateScoreStats = () => {
+    const validScores: Array<number> = [];
+    
+    if (scores) {
+      Object.keys(scores).forEach(model => {
+        const modelKey = model as keyof typeof scores;
+        const score = scores[modelKey][currentTestIndex];
+        if (score !== null) {
+          validScores.push(score);
+        }
+      });
+    }
+    
+    if (validScores.length === 0) {
+      return { avg: 0, max: 0, min: 0, hasScores: false };
+    }
+    
+    // 计算平均分、最高分、最低分
+    const sum = validScores.reduce((acc, score) => acc + score, 0);
+    const avg = Math.round((sum / validScores.length) * 10) / 10; // 保留一位小数
+    const max = Math.max(...validScores);
+    const min = Math.min(...validScores);
+    
+    return { avg, max, min, hasScores: true };
+  };
+  
   const progress = calculateCurrentTestProgress();
+  const scoreStats = calculateScoreStats();
+  
+  // 获取所有模型评分
+  const getModelScores = (): Record<ModelKey, number | null> => {
+    const modelScores: Record<ModelKey, number | null> = {
+      gemini: null,
+      claude: null,
+      chatgpt: null,
+      grok: null
+    };
+    
+    if (scores) {
+      Object.keys(scores).forEach(model => {
+        const modelKey = model as ModelKey;
+        modelScores[modelKey] = scores[modelKey][currentTestIndex];
+      });
+    }
+    
+    return modelScores;
+  };
+  
+  const modelScores = getModelScores();
   
   // 复制提示词到剪贴板
   const copyPrompt = async () => {
@@ -128,7 +229,7 @@ const CurrentTest: React.FC = () => {
   };
   
   return (
-    <div className="lg:col-span-2 lg:row-span-2 bg-white rounded-2xl p-8 bento-card">
+    <div className="lg:col-span-2 lg:row-span-2 bg-white rounded-2xl p-8 bento-card ">
       {editMode.isEditing ? (
         // 编辑模式
         <div className="flex flex-col gap-5">
@@ -199,7 +300,7 @@ const CurrentTest: React.FC = () => {
             </div>
           </div>
           
-          <div className="bg-slate-50 rounded-2xl p-6 mb-6 h-40 overflow-y-auto">
+          <div className="bg-slate-50 rounded-2xl p-6 mb-6 h-40 overflow-y-auto custom-scrollbar">
             <p className="text-slate-700 leading-relaxed">
               {currentTest.prompt}
             </p>
@@ -207,19 +308,51 @@ const CurrentTest: React.FC = () => {
           
           {/* 统计信息区域 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {/* 当前题目完成统计 */}
+            {/* 当前题目完成度 */}
             <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4">
-              <div className="flex items-center">
+              <div className="flex items-center mb-5">
                 <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
                   <i className="fas fa-chart-bar text-white text-sm"></i>
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-slate-700">本题完成度</div>
-                  <div className="text-lg font-bold text-blue-600">
-                    {progress.completed}/{progress.total} 已评分
-                  </div>
+                  <div className="text-sm font-semibold text-slate-700">本题进度</div>
                 </div>
               </div>
+              <div className="text-lg  font-bold text-blue-600 ">
+                    {progress.completed}/{progress.total} 已评分
+              </div>
+            </div>
+
+            {/* 评分对比 改为评分统计 */}
+            <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-4">
+              <div className="flex items-center mb-2">
+                <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center mr-3">
+                  <i className="fas fa-star-half-alt text-white text-sm"></i>
+                </div>
+                <div className="text-sm font-semibold text-slate-700">评分统计</div>
+              </div>
+              
+              {scoreStats.hasScores ? (
+                <div className="flex justify-between items-center mt-1">
+                  
+                  <div className="text-center">
+                    <div className="font-bold text-green-600 text-lg">{scoreStats.max}</div>
+                    <div className="text-xs text-slate-500">最高分</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-bold text-purple-600 text-lg">{scoreStats.avg}</div>
+                    <div className="text-xs text-slate-500">平均分</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-bold text-blue-600 text-lg">{scoreStats.min}</div>
+                    <div className="text-xs text-slate-500">最低分</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-0.5 text-slate-500 text-sm">
+                  暂无评分数据
+                </div>
+              )}
             </div>
           </div>
           

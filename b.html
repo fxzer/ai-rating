@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流光进度条</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .progress-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background-color: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 15px;
+            position: relative;
+            transition: width 0.3s ease, background 0.3s ease;
+        }
+
+        /* 流光效果 */
+        .progress-fill::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.8) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            animation: shine 2s infinite;
+            border-radius: 15px;
+        }
+
+        @keyframes shine {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #333;
+            font-weight: bold;
+            text-shadow: 0 0 2px white;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4facfe;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #00f2fe;
+        }
+
+        .progress-input {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="range"] {
+            width: 300px;
+        }
+
+        .percentage-input {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>流光进度条演示</h1>
+    
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+            <div class="progress-text">0%</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="decrease-btn">-10%</button>
+        <button id="increase-btn">+10%</button>
+    </div>
+
+    <div class="progress-input">
+        <input type="range" id="progress-slider" min="0" max="100" value="0">
+        <input type="number" id="percentage-input" class="percentage-input" min="0" max="100" value="0">%
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const progressFill = document.querySelector('.progress-fill');
+        const progressText = document.querySelector('.progress-text');
+        const increaseBtn = document.getElementById('increase-btn');
+        const decreaseBtn = document.getElementById('decrease-btn');
+        const progressSlider = document.getElementById('progress-slider');
+        const percentageInput = document.getElementById('percentage-input');
+
+        let progress = 0;
+
+        // 更新进度条函数
+        function updateProgress(value) {
+            // 限制进度在0-100之间
+            progress = Math.max(0, Math.min(100, value));
+            
+            // 更新进度条宽度
+            progressFill.style.width = `${progress}%`;
+            
+            // 更新进度文本
+            progressText.textContent = `${Math.round(progress)}%`;
+            
+            // 同步滑块和输入框
+            progressSlider.value = progress;
+            percentageInput.value = Math.round(progress);
+            
+            // 根据进度改变颜色
+            if (progress > 80) {
+                progressFill.style.background = 'linear-gradient(90deg, #f83600 0%, #f9d423 100%)';
+            } else if (progress > 50) {
+                progressFill.style.background = 'linear-gradient(90deg, #a8ff78 0%, #78ffd6 100%)';
+            } else {
+                progressFill.style.background = 'linear-gradient(90deg, #4facfe 0%, #00f2fe 100%)';
+            }
+        }
+
+        // 按钮事件监听
+        increaseBtn.addEventListener('click', () => {
+            updateProgress(progress + 10);
+        });
+
+        decreaseBtn.addEventListener('click', () => {
+            updateProgress(progress - 10);
+        });
+
+        // 滑块事件监听
+        progressSlider.addEventListener('input', () => {
+            updateProgress(parseInt(progressSlider.value));
+        });
+
+        // 输入框事件监听
+        percentageInput.addEventListener('input', () => {
+            let value = parseInt(percentageInput.value);
+            if (!isNaN(value)) {
+                updateProgress(value);
+            }
+        });
+
+        // 模拟自动加载
+        function simulateLoading() {
+            let loadingProgress = 0;
+            const loadingInterval = setInterval(() => {
+                loadingProgress += 1;
+                updateProgress(loadingProgress);
+                if (loadingProgress >= 100) {
+                    clearInterval(loadingInterval);
+                }
+            }, 50);
+        }
+
+        // 初始化
+        updateProgress(0);
+
+        // 3秒后自动开始模拟加载
+        setTimeout(simulateLoading, 3000);
+    </script>
+</body>
+</html>
