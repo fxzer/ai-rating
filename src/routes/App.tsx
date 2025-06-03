@@ -4,7 +4,6 @@ import CurrentTest from '../components/CurrentTest/CurrentTest';
 import AIModels from '../components/AIModels/AIModels';
 import TestGrid from '../components/TestGrid/TestGrid';
 import ResultsModal from '../components/ResultsModal/ResultsModal';
-import { useStore } from '../store/useStore';
 
 export const App: React.FC = () => {
   return (

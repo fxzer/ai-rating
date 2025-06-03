@@ -48,6 +48,7 @@ const CurrentTest: React.FC = () => {
     prompt: '',
     icon: ''
   });
+  const [isCopied, setIsCopied] = useState(false);
   
   const prevTestsLengthRef = useRef<number>(tests.length);
   
@@ -177,7 +178,10 @@ const CurrentTest: React.FC = () => {
   const copyPrompt = async () => {
     try {
       await navigator.clipboard.writeText(currentTest.prompt);
-      alert('提示词已复制到剪贴板');
+      setIsCopied(true);
+      setTimeout(() => {
+        setIsCopied(false);
+      }, 3000);
     } catch (err) {
       console.error('复制失败:', err);
     }
@@ -256,14 +260,14 @@ const CurrentTest: React.FC = () => {
           
           <div className="flex space-x-3  ">
             <button 
-              className="flex-1 bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 py-3 px-4 rounded-xl hover:from-slate-200 hover:to-slate-300 transition-all flex items-center justify-center"
+              className="flex-1 bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 py-3 px-4 rounded-xl hover:from-slate-200 cursor-pointer  hover:to-slate-300 transition-all flex items-center justify-center"
               onClick={() => setEditMode(prev => ({ ...prev, isEditing: false }))}
             >
               <i className="fas fa-times mr-2"></i>
               取消
             </button>
             <button 
-              className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 px-4 rounded-xl hover:transition-all flex items-center justify-center"
+              className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 px-4 rounded-xl hover:transition-all cursor-pointer  flex items-center justify-center"
               onClick={saveEdit}
             >
               <i className="fas fa-save mr-2"></i>
@@ -286,16 +290,16 @@ const CurrentTest: React.FC = () => {
             </div>
             <div className="flex space-x-2">
               <button 
-                className="bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors w-10 h-10" 
+                className="bg-slate-100 hover:bg-slate-200 cursor-pointer rounded-full p-2 transition-colors w-10 h-10" 
                 onClick={enterEditMode}
               >
                 <i className="fas fa-edit text-slate-600 "></i>
               </button>
               <button 
-                className="bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors w-10 h-10" 
+                className="bg-slate-100 hover:bg-slate-200 cursor-pointer rounded-full p-2 transition-colors w-10 h-10" 
                 onClick={copyPrompt}
               >
-                <i className="fas fa-copy text-slate-600 "></i>
+                <i className={`${isCopied ? 'fas fa-check text-green-500' : 'fas fa-copy text-slate-600'}`}></i>
               </button>
             </div>
           </div>
@@ -359,7 +363,7 @@ const CurrentTest: React.FC = () => {
           {/* 快捷操作区域 - 替换成上一题和下一题按钮 */}
           <div className="flex space-x-3">
             <button 
-              className={`flex-1 bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 py-3 px-4 rounded-xl hover:from-slate-200 hover:to-slate-300 transition-all flex items-center justify-center ${currentTestIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`flex-1 bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 py-3 px-4 rounded-xl hover:from-slate-200 cursor-pointer  hover:to-slate-300 transition-all flex items-center justify-center ${currentTestIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={goToPrevTest}
               disabled={currentTestIndex === 0}
             >
@@ -368,7 +372,7 @@ const CurrentTest: React.FC = () => {
             </button>
             
             <button 
-              className={`flex-1 bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 py-3 px-4 rounded-xl hover:from-slate-200 hover:to-slate-300 transition-all flex items-center justify-center ${currentTestIndex === tests.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`flex-1 bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 py-3 px-4 rounded-xl hover:from-slate-200 cursor-pointer  hover:to-slate-300 transition-all flex items-center justify-center ${currentTestIndex === tests.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={goToNextTest}
               disabled={currentTestIndex === tests.length - 1}
             >
