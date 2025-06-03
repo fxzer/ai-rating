@@ -1,3 +1,4 @@
+English | [中文](./README.md)
 # AI Rating
 
 Ultimate AI model comparison and evaluation system, developed with React and Zustand, featuring a friendly Bento-style UI.

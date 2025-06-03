@@ -1,3 +1,5 @@
+
+中文 | [English](./README-EN.md)
 # AI Rating
 
 AI模型终极对战评测系统，基于React和Zustand开发，使用友好的Bento风格UI。
