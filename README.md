@@ -2,6 +2,9 @@
 
 AI模型终极对战评测系统，基于React和Zustand开发，使用友好的Bento风格UI。
 
+## 预览截图
+![AI Rating](./public/example.png)
+
 ## 主要功能
 
 ### 1. 关卡题目/AI管理

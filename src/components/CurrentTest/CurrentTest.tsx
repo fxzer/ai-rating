@@ -248,7 +248,7 @@ const CurrentTest: React.FC = () => {
             </div>
           
             <textarea 
-              className="w-full h-62 bg-transparent border  border-slate-300 text-slate-800 resize-none focus:outline-none p-2 rounded-lg focus:ring-1 focus:ring-purple-500"
+              className="w-full h-62 bg-transparent border  border-slate-300 text-sm text-slate-800 resize-none focus:outline-none p-2 rounded-lg focus:ring-1 focus:ring-purple-500"
               value={editMode.prompt}
               onChange={e => setEditMode(prev => ({ ...prev, prompt: e.target.value }))}
               placeholder="输入测试提示词..."

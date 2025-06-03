@@ -2,6 +2,9 @@
 
 Ultimate AI model comparison and evaluation system, developed with React and Zustand, featuring a friendly Bento-style UI.
 
+## Preview Screenshot
+![AI Rating](./public/example.png)
+
 ## Main Features
 
 ### 1. Test Questions/AI Management

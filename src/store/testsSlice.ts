@@ -21,7 +21,7 @@ export const initialTests: Array<Test> = [
 请找出正确的4位代码并说明推理过程。`,
     evaluationCriteria: "推理准确性、解题步骤清晰度、逻辑严密性"
   },
- /*  {
+  {
     id: '2',
     icon: "fas fa-calculator",
     title: "数学计算 - 24点游戏", 
@@ -550,7 +550,7 @@ export const initialTests: Array<Test> = [
 
 注重创意表达和用户参与感，界面应简洁但功能强大。`,
     evaluationCriteria: "创意叙事、视觉表现、交互设计、用户体验、技术实现"
-  } */
+  }
 ];
 
 // 测试相关操作
