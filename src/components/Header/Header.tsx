@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useStore } from '../../store/useStore'
 
 // 定义流光和渐变动画的CSS
@@ -50,10 +50,38 @@ const progressBarStyles = `
     font-weight: 600;
     pointer-events: none;
   }
+  
+  .result-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    background-image: linear-gradient(to right, #f8cd37, #ffb727);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(248, 205, 55, 0.4);
+    transition: all 0.3s ease;
+  }
+  
+  .result-button:hover {
+    box-shadow: 0 4px 8px rgba(248, 205, 55, 0.6);
+    transform: translate(-50%, -50%) scale(1.05);
+  }
 `
 
 const Header: React.FC = () => {
-  const { tests, scores } = useStore()
+  const { tests, scores, setShowResultsModal } = useStore()
+  const [isCompleted, setIsCompleted] = useState(false)
+  const [progress, setProgress] = useState({
+    percent: 0,
+    completed: 0,
+    total: 0
+  })
 
   // 动态添加CSS到页面
   useEffect(() => {
@@ -73,27 +101,52 @@ const Header: React.FC = () => {
     }
   }, [])
 
-  // 计算总进度
-  const calculateTotalProgress = () => {
-    const totalRatings = tests.length * 4 // 4个模型
-    let completedRatings = 0
-
-    if (scores) {
+  // 当tests或scores变化时，重新计算进度和完成状态
+  useEffect(() => {
+    // 计算总进度
+    const calculateTotalProgress = () => {
+      const totalRatings = tests.length * Object.keys(scores).length
+      let completedRatings = 0
+  
       Object.values(scores).forEach((modelScores: Array<number | null>) => {
         completedRatings += modelScores.filter(
           (score: number | null) => score !== null,
         ).length
       })
+  
+      return {
+        percent: tests.length === 0 ? 0 : (completedRatings / totalRatings) * 100,
+        completed: completedRatings,
+        total: totalRatings,
+      }
+    }
+    
+    // 计算是否所有评分已完成
+    const calculateCompletion = () => {
+      if (tests.length === 0 || Object.keys(scores).length === 0) {
+        return false
+      }
+      
+      let allCompleted = true
+      
+      Object.values(scores).forEach(modelScores => {
+        // 检查是否每个模型的评分都完成了
+        if (modelScores.length !== tests.length || modelScores.some(score => score === null)) {
+          allCompleted = false
+        }
+      })
+      
+      return allCompleted
     }
 
-    return {
-      percent: tests.length === 0 ? 0 : (completedRatings / totalRatings) * 100,
-      completed: completedRatings,
-      total: totalRatings,
-    }
+    setProgress(calculateTotalProgress())
+    setIsCompleted(calculateCompletion())
+  }, [tests, scores])
+  
+  // 打开结果模态框
+  const openResultsModal = () => {
+    setShowResultsModal(true)
   }
-
-  const progress = calculateTotalProgress()
 
   return (
     <div className="text-center mb-5 animate-float">
@@ -104,7 +157,7 @@ const Header: React.FC = () => {
       </div>
 
       {/* 进度指示器 */}
-      <div className="bg-white rounded-2xl p-6 mx-auto shadow-xs">
+      <div className="bg-white rounded-2xl p-6 mx-auto shadow-xs relative">
         <div className="progress-track">
           <div
             className="progress-bar"
@@ -120,6 +173,16 @@ const Header: React.FC = () => {
             </span>
           </div>
         </div>
+        
+        {/* 绝对定位的查看结果按钮 */}
+        {isCompleted && tests.length > 0 && (
+          <button 
+            className="result-button"
+            onClick={openResultsModal}
+          >
+            <i className="fas fa-trophy mr-1"></i>查看结果
+          </button>
+        )}
       </div>
     </div>
   )

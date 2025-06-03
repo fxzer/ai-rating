@@ -41,7 +41,7 @@ const scrollbarStyles = `
 `
 
 const CurrentTest: React.FC = () => {
-  const { tests, currentTestIndex, scores, setCurrentTestIndex } = useStore();
+  const { tests, currentTestIndex, scores, setCurrentTestIndex, models } = useStore();
   const [editMode, setEditMode] = useState<EditModeState>({
     isEditing: false,
     title: '',
@@ -101,7 +101,7 @@ const CurrentTest: React.FC = () => {
   
   if (tests.length === 0) {
     return (
-      <div className="lg:col-span-2 lg:row-span-2 bg-white rounded-2xl p-8 bento-card">
+      <div className="lg:col-span-2 lg:row-span-2 bg-white rounded-2xl p-6 bento-card">
         <p className="text-center text-gray-500 mt-8">请添加测试题目</p>
       </div>
     );
@@ -112,30 +112,28 @@ const CurrentTest: React.FC = () => {
   // 计算当前测试完成度
   const calculateCurrentTestProgress = () => {
     let completedCount = 0;
-    if (scores) {
-      Object.keys(scores).forEach(model => {
-        const modelKey = model as keyof typeof scores;
-        if (scores[modelKey][currentTestIndex] !== null) {
-          completedCount++;
-        }
-      });
-    }
-    return { completed: completedCount, total: 4 }; // 4个模型
+    
+    Object.keys(scores).forEach(model => {
+      const modelKey = model as keyof typeof scores;
+      if (scores[modelKey][currentTestIndex] !== null) {
+        completedCount++;
+      }
+    });
+    
+    return { completed: completedCount, total: Object.keys(scores).length }; // 使用实际的模型数量
   };
   
   // 计算评分统计
   const calculateScoreStats = () => {
     const validScores: Array<number> = [];
     
-    if (scores) {
-      Object.keys(scores).forEach(model => {
-        const modelKey = model as keyof typeof scores;
-        const score = scores[modelKey][currentTestIndex];
-        if (score !== null) {
-          validScores.push(score);
-        }
-      });
-    }
+    Object.keys(scores).forEach(model => {
+      const modelKey = model as keyof typeof scores;
+      const score = scores[modelKey][currentTestIndex];
+      if (score !== null) {
+        validScores.push(score);
+      }
+    });
     
     if (validScores.length === 0) {
       return { avg: 0, max: 0, min: 0, hasScores: false };
@@ -162,12 +160,10 @@ const CurrentTest: React.FC = () => {
       grok: null
     };
     
-    if (scores) {
-      Object.keys(scores).forEach(model => {
-        const modelKey = model as ModelKey;
-        modelScores[modelKey] = scores[modelKey][currentTestIndex];
-      });
-    }
+    Object.keys(scores).forEach(model => {
+      const modelKey = model as ModelKey;
+      modelScores[modelKey] = scores[modelKey][currentTestIndex];
+    });
     
     return modelScores;
   };
@@ -233,7 +229,7 @@ const CurrentTest: React.FC = () => {
   };
   
   return (
-    <div className="lg:col-span-2 lg:row-span-2 bg-white rounded-2xl p-8 bento-card ">
+    <div className="lg:col-span-2 lg:row-span-2 bg-white rounded-2xl p-6 bento-card ">
       {editMode.isEditing ? (
         // 编辑模式
         <div className="flex flex-col gap-5">
@@ -252,7 +248,7 @@ const CurrentTest: React.FC = () => {
             </div>
           
             <textarea 
-              className="w-full h-55 bg-transparent border  border-slate-300 text-slate-800 resize-none focus:outline-none p-2 rounded-lg focus:ring-1 focus:ring-purple-500"
+              className="w-full h-62 bg-transparent border  border-slate-300 text-slate-800 resize-none focus:outline-none p-2 rounded-lg focus:ring-1 focus:ring-purple-500"
               value={editMode.prompt}
               onChange={e => setEditMode(prev => ({ ...prev, prompt: e.target.value }))}
               placeholder="输入测试提示词..."
@@ -278,7 +274,7 @@ const CurrentTest: React.FC = () => {
       ) : (
         // 查看模式
         <>
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center">
               <div className="w-12 h-12 bg-bento-purple rounded-2xl flex items-center justify-center mr-4">
                 <i className={`${currentTest.icon} text-2xl text-purple-600`}></i>
@@ -304,17 +300,17 @@ const CurrentTest: React.FC = () => {
             </div>
           </div>
           
-          <div className="bg-slate-50 rounded-2xl p-6 mb-6 h-40 overflow-y-auto custom-scrollbar">
-            <p className="text-slate-700 leading-relaxed">
+          <div className="bg-slate-50 rounded-2xl p-4 mb-3 h-40 overflow-y-auto custom-scrollbar">
+            <p className="text-slate-700 leading-relaxed text-sm">
               {currentTest.prompt}
             </p>
           </div>
           
           {/* 统计信息区域 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
             {/* 当前题目完成度 */}
             <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4">
-              <div className="flex items-center mb-5">
+              <div className="flex items-center mb-4">
                 <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
                   <i className="fas fa-chart-bar text-white text-sm"></i>
                 </div>
@@ -363,7 +359,7 @@ const CurrentTest: React.FC = () => {
           {/* 快捷操作区域 - 替换成上一题和下一题按钮 */}
           <div className="flex space-x-3">
             <button 
-              className={`flex-1 bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 py-3 px-4 rounded-xl hover:from-slate-200 cursor-pointer  hover:to-slate-300 transition-all flex items-center justify-center ${currentTestIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`flex-1 bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 py-2 px-4 rounded-xl hover:from-slate-200 cursor-pointer  hover:to-slate-300 transition-all flex items-center justify-center ${currentTestIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={goToPrevTest}
               disabled={currentTestIndex === 0}
             >
@@ -372,7 +368,7 @@ const CurrentTest: React.FC = () => {
             </button>
             
             <button 
-              className={`flex-1 bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 py-3 px-4 rounded-xl hover:from-slate-200 cursor-pointer  hover:to-slate-300 transition-all flex items-center justify-center ${currentTestIndex === tests.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`flex-1 bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 py-2 px-4 rounded-xl hover:from-slate-200 cursor-pointer  hover:to-slate-300 transition-all flex items-center justify-center ${currentTestIndex === tests.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={goToNextTest}
               disabled={currentTestIndex === tests.length - 1}
             >

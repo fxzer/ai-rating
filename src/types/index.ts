@@ -3,22 +3,40 @@ export interface Test {
   icon: string;
   title: string;
   prompt: string;
+  category?: string;
+  difficulty?: string;
+  evaluationCriteria?: string;
 }
 
 export interface ModelScore {
-  gemini: Array<number | null>;
-  claude: Array<number | null>;
-  chatgpt: Array<number | null>;
-  grok: Array<number | null>;
+  [key: string]: Array<number | null>;
 }
 
-export type ModelKey = keyof ModelScore;
+export type ModelKey = string;
 
 export interface AIModelConfig {
+  id: string;
   modelKey: ModelKey;
   name: string;
   icon: string;
   bgColorClass: string;
   iconColorClass: string;
   provider: string;
+}
+
+export interface EditModeState {
+  isEditing: boolean;
+  title: string;
+  prompt: string;
+  icon: string;
+}
+
+export interface EditModelModeState {
+  isEditing: boolean;
+  name: string;
+  modelKey: string;
+  icon: string;
+  provider: string;
+  bgColorClass: string;
+  iconColorClass: string;
 } 
